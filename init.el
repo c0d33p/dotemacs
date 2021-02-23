@@ -38,9 +38,50 @@
   :straight t)
 
 ;; Font
-(set-frame-font "firacode 12" nil t)
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(set-frame-font "firacode 10" nil t)
 
-;; yes/no == y/n
+;; Font - ligatury
+(straight-use-package
+  '(ligature :type git :host github :repo "mickeynp/ligature.el"))
+
+;; Enable the www ligature in every possible major mode
+
+(ligature-set-ligatures 't '("www"))
+
+;; Enable ligatures in programming modes                                                           
+(ligature-set-ligatures 'prog-mode '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\" "{-" "::"
+                                     ":::" ":=" "!!" "!=" "!==" "-}" "----" "-->" "->" "->>"
+                                     "-<" "-<<" "-~" "#{" "#[" "##" "###" "####" "#(" "#?" "#_"
+                                     "#_(" ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*" "/**"
+                                     "/=" "/==" "/>" "//" "///" "&&" "||" "||=" "|=" "|>" "^=" "$>"
+                                     "++" "+++" "+>" "=:=" "==" "===" "==>" "=>" "=>>" "<="
+                                     "=<<" "=/=" ">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>" "<*"
+                                     "<*>" "<|" "<|>" "<$" "<$>" "<!--" "<-" "<--" "<->" "<+"
+                                     "<+>" "<=" "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<"
+                                     "<~" "<~~" "</" "</>" "~@" "~-" "~>" "~~" "~~>" "%%"))
+
+(global-ligature-mode 't)
+
+;; Font errors patch
+(defun my/ansi-colorize-buffer ()
+(let ((buffer-read-only nil))
+(ansi-color-apply-on-region (point-min) (point-max))))
+
+(leaf ansi-color
+  :straight t
+  :config
+  (add-hook 'compilation-filter-hook 'my/ansi-colorize-buffer)
+  )
+
+;; QoL
+(setq ring-bell-function 'ignore)
+(electric-pair-mode 1)
+(setq-default tab-width 4)
+(show-paren-mode 1)
+
+;; QoL - yes/no == y/n
 (fset 'yes-or-no-p 'y-or-n-p) 
 
 ;; Backup
@@ -52,15 +93,58 @@
    kept-old-versions 5   
    )
 
+
+
+;; Key-Chord
+(leaf key-chord
+  :straight t
+  :init 
+  :config (key-chord-mode 1)
+  (setq key-chord-two-keys-delay 0.4)
+  (setq key-chord-one-key-delay 0.5))
+
+;; PROJECTILE
+(leaf projectile
+  :straight t
+  :init (projectile-mode +1)
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+
+;; HELM
 (leaf helm
   :straight t
+  :init
+  (helm-mode 1)
+  (progn (setq helm-buffers-fuzzy-matching t))
   :bind
   ("M-x"     . helm-M-x)
   ("C-x C-f" . helm-find-files)
   ("C-x C-r" . helm-recentf)
-  :config
-  (helm-mode 1))
-  
+  ("C-c h"   . helm-command-prefix)
+  ("C-x b"   . helm-buffer-list)
+  ("C-c b"   . helm-bookmarks)
+  ("C-x a"   . helm-mini)
+  ("C-c g"   . helm-grep-do-git-grep))
+
+(leaf helm-descbinds
+  :straight t
+  :bind
+  ("C-h b"   . helm-descbinds))
+
+(leaf helm-swoop
+  :straight t
+  :load-path "site-lisp/helm-swoop"
+  :chord
+  ("js"     . helm-swoop)
+  ("jp"     . helm-swoop-back-to-last-point)
+  :init
+  (define-key isearch-mode-map (kbd "M-m") 'helm-occur-from-isearch)
+  (setq helm-swoop-use-fuzzy-match t)
+  (setq helm-multi-swoop-edit-save t)
+  (setq helm-swoop-split-with-multiple-windows nil)
+  (setq helm-swoop-split-direction 'split-window-vertically)
+  (setq helm-swoop-speed-or-color nil)
+  (setq helm-swoop-move-to-line-cycle t))
 
 ;; Rainbow Delimiters
 (leaf rainbow-delimiters
@@ -88,6 +172,27 @@
   (set-face-bold 'rainbow-delimiters-depth-8-face "t") 
   (set-face-bold 'rainbow-delimiters-depth-9-face "t"))
 
+
+;; AVY
+
+(leaf avy
+  :straight t
+  :chord
+  ("jc"  .  avy-goto-char)
+  ("jw"  .  avy-goto-word-1)
+  ("jl"  .  avy-goto-line))
+
+;; WHICH-KEY
+(leaf which-key
+  :straight t
+  :init
+  (which-key-mode))
+
+;; QUICKRUN
+(leaf quickrun
+  :straight t
+  :bind
+  ("C-c C-r"  .  quickrun))
 
 ;; Languages
 
